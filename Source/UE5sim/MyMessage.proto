@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message MyMessage {
+    int32 mynumber = 1;
+    string mystring = 2;
+}
+

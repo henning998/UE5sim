@@ -11,7 +11,7 @@ public class UE5sim : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         bEnforceIWYU = true;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "Wakefield" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "Wakefield" ,"Sockets" , "Networking"});
         PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "../../Binaries/Win64/libprotobuf.lib"));
         PrivateDependencyModuleNames.AddRange(new string[] { "GoogleProtocolBuffers" });
     }

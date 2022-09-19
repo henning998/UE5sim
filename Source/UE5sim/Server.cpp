@@ -85,6 +85,7 @@ void AServer::Conduct_Connection()
 		if (ListenSocket->HasPendingConnection(hasConnection) && hasConnection)
 		{
 			ConnectionSockets.push_back(ListenSocket->Accept(*RemoteAddress, TEXT("Connection")));
+			LastActivitySockets.push_back(FPlatformTime::Seconds());
 			if(ConnectionSockets.size() == NumberOfListen)
 			{
 				WaitingForConnection = false;
@@ -92,32 +93,47 @@ void AServer::Conduct_Connection()
 			UE_LOG(LogTemp, Warning, TEXT("incoming connection"));
 
 			//Starting async recv thread
-			ClientConnectionFinishedFuture = Async(EAsyncExecution::LargeThreadPool, [&]() { //lambda func
-				UE_LOG(LogTemp, Warning, TEXT("recv thread started"));
-				while (IsConnectionOpen)
-				{
-					uint32 size;
-					TArray<uint8> ReceivedData;
-					for (size_t i = 0; i < ConnectionSockets.size(); i++)
-					{
-
-						if (ConnectionSockets.at(i)->HasPendingData(size))
+			if(!RecvThreadStarted)
+			{
+				RecvThreadStarted = true;
+				ClientConnectionFinishedFuture = Async(EAsyncExecution::LargeThreadPool, [&]() 
+					{ //lambda func
+						UE_LOG(LogTemp, Warning, TEXT("recv thread started"));
+						while (IsConnectionOpen)
 						{
-							ReceivedData.Init(0, 10);
-							int32 Read = 0;
-							ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
-							if (ReceivedData.Num() > 0)
+							uint32 size;
+							TArray<uint8> ReceivedData;
+							for (size_t i = 0; i < ConnectionSockets.size(); i++)
 							{
-								if (ReceivedData[0] != 0) {
-									UE_LOG(LogTemp, Warning, TEXT("GOT MAIL"));
-									int32 bytesend = 0;
-									ConnectionSockets.at(i)->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+								if ((ConnectionSockets.at(i)->GetConnectionState() == SCS_Connected)&&((LastActivitySockets.at(i)+TimeOutConnection) >= FPlatformTime::Seconds()))
+								{
+									if (ConnectionSockets.at(i)->HasPendingData(size))
+									{
+										ReceivedData.Init(0, 10);
+										int32 Read = 0;
+										ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+										LastActivitySockets.at(i) = FPlatformTime::Seconds();
+										if (ReceivedData.Num() > 0)
+										{
+											if (ReceivedData[0] != 0) {
+												UE_LOG(LogTemp, Warning, TEXT("GOT MAIL"));
+												int32 bytesend = 0;
+												ConnectionSockets.at(i)->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+											}
+										}
+									}
+								}
+								else 
+								{
+									ConnectionSockets.at(i)->Close();
+									ConnectionSockets.erase(ConnectionSockets.begin() + i);
+									LastActivitySockets.erase(LastActivitySockets.begin() + i);
+									WaitingForConnection = true;
 								}
 							}
 						}
-					}
-				}
-				});
+					});
+			}
 		}
 	}
 }

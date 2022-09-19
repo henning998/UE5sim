@@ -17,9 +17,12 @@ class UE5SIM_API AServer : public AActor
 	GENERATED_BODY()
 	FSocket* ListenSocket;
 	std::vector<FSocket*> ConnectionSockets;
+	std::vector<double> LastActivitySockets;
 	bool IsConnectionOpen = false;
 	bool WaitingForConnection = false;
+	bool RecvThreadStarted = false;
 	int NumberOfListen = 10;
+	double TimeOutConnection = 60; // seconds
 
 	TFuture<void> ClientConnectionFinishedFuture;
 

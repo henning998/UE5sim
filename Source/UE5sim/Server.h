@@ -7,6 +7,7 @@
 #include "Runtime/Networking/Public/Networking.h"
 #include "Runtime/Sockets/Public/Sockets.h"
 #include "Runtime/Sockets/Public/SocketSubsystem.h"
+#include <vector>
 
 #include "Server.generated.h"
 
@@ -15,9 +16,10 @@ class UE5SIM_API AServer : public AActor
 {
 	GENERATED_BODY()
 	FSocket* ListenSocket;
-	FSocket* ConnectionSocket;
+	std::vector<FSocket*> ConnectionSockets;
 	bool IsConnectionOpen = false;
 	bool WaitingForConnection = false;
+	int NumberOfListen = 10;
 
 	TFuture<void> ClientConnectionFinishedFuture;
 

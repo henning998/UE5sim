@@ -2,6 +2,11 @@
 
 
 #include "Server.h"
+THIRD_PARTY_INCLUDES_START
+
+#include "MyMessage.pb.h"
+
+THIRD_PARTY_INCLUDES_END
 
 // Sets default values
 AServer::AServer()
@@ -53,7 +58,7 @@ void AServer::Open_Connection()
 		dummy->SetIp(Endpoint.Address.Value);
 		dummy->SetPort(Endpoint.Port);
 		ListenSocket->Bind(*dummy);
-		ListenSocket->Listen(1);
+		ListenSocket->Listen(NumberOfListen);
 
 		UE_LOG(LogTemp, Warning, TEXT("Listening"));
 	}
@@ -79,8 +84,11 @@ void AServer::Conduct_Connection()
 		bool hasConnection = false;
 		if (ListenSocket->HasPendingConnection(hasConnection) && hasConnection)
 		{
-			ConnectionSocket = ListenSocket->Accept(*RemoteAddress, TEXT("Connection"));
-			WaitingForConnection = false;
+			ConnectionSockets.push_back(ListenSocket->Accept(*RemoteAddress, TEXT("Connection")));
+			if(ConnectionSockets.size() == NumberOfListen)
+			{
+				WaitingForConnection = false;
+			}
 			UE_LOG(LogTemp, Warning, TEXT("incoming connection"));
 
 			//Starting async recv thread
@@ -90,17 +98,21 @@ void AServer::Conduct_Connection()
 				{
 					uint32 size;
 					TArray<uint8> ReceivedData;
-					if (ConnectionSocket->HasPendingData(size))
+					for (size_t i = 0; i < ConnectionSockets.size(); i++)
 					{
-						ReceivedData.Init(0, 10);
-						int32 Read = 0;
-						ConnectionSocket->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
-						if (ReceivedData.Num() > 0)
+
+						if (ConnectionSockets.at(i)->HasPendingData(size))
 						{
-							if (ReceivedData[0] != 0) {
-								UE_LOG(LogTemp, Warning, TEXT("GOT MAIL"));
-								int32 bytesend = 0;
-								ConnectionSocket->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+							ReceivedData.Init(0, 10);
+							int32 Read = 0;
+							ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+							if (ReceivedData.Num() > 0)
+							{
+								if (ReceivedData[0] != 0) {
+									UE_LOG(LogTemp, Warning, TEXT("GOT MAIL"));
+									int32 bytesend = 0;
+									ConnectionSockets.at(i)->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+								}
 							}
 						}
 					}

@@ -13,6 +13,13 @@ AServer::AServer()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_test(TEXT("Blueprint'/Game/Blueprints/cartpoletest.cartpoletest'"));
+	if (blueprint_finder_test.Succeeded())
+		mBCTest = (UClass*)blueprint_finder_test.Object->GeneratedClass;
+	static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_cartpole(TEXT("Blueprint'/Game/Blueprints/BP_Cartpole.BP_Cartpole'"));
+	if (blueprint_finder_cartpole.Succeeded())
+		mBCCartpole = (UClass*)blueprint_finder_cartpole.Object->GeneratedClass;
+	
 
 }
 
@@ -20,6 +27,7 @@ AServer::AServer()
 void AServer::BeginPlay()
 {
 	Open_Connection();
+	AddActor();
 	Super::BeginPlay();
 	
 }
@@ -112,6 +120,7 @@ void AServer::Conduct_Connection()
 										ReceivedData.Init(0, 10);
 										int32 Read = 0;
 										ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+										Message(ReceivedData);
 										LastActivitySockets.at(i) = FPlatformTime::Seconds();
 										if (ReceivedData.Num() > 0)
 										{
@@ -125,6 +134,7 @@ void AServer::Conduct_Connection()
 								}
 								else 
 								{
+									// NEED TO BE UPDATED FOR DELETING THE ADDED AGENT
 									ConnectionSockets.at(i)->Close();
 									ConnectionSockets.erase(ConnectionSockets.begin() + i);
 									LastActivitySockets.erase(LastActivitySockets.begin() + i);
@@ -136,4 +146,33 @@ void AServer::Conduct_Connection()
 			}
 		}
 	}
+}
+
+void AServer::Message(TArray<uint8> msg)
+{
+// get from a Tarray of bytes to a string and then to a protobuf
+	std::string message;
+	for (size_t i = 0; i < msg.Num(); i++)
+	{
+		message.push_back(msg[i]);
+	}
+	MyMessage inbox;
+	inbox.ParseFromString(message);
+	double num = inbox.mynumber();
+	std::string st = inbox.mystring();
+	//AddActor();
+	// add func to add agent and set input
+}
+
+void AServer::AddActor()
+{
+	const FVector spawn_point = FVector(0, 4, 7);
+	const FRotator spawn_rotation = FRotator();
+	ListOfActors.push_back(GetWorld()->SpawnActor<ACartpole>(mBCCartpole, spawn_point, spawn_rotation));
+	double test = ListOfActors.at(0)->GameTestCart;
+}
+
+void AServer::SetInputActor()
+{
+
 }

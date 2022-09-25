@@ -8,6 +8,7 @@
 #include "Runtime/Sockets/Public/Sockets.h"
 #include "Runtime/Sockets/Public/SocketSubsystem.h"
 #include <vector>
+#include "Cartpole.h"
 
 #include "Server.generated.h"
 
@@ -41,4 +42,12 @@ public:
 	void Open_Connection();
 	void Close_Connection();
 	void Conduct_Connection();
+	void Message(TArray<uint8> msg);
+	void AddActor();
+	void SetInputActor();
+
+	UClass* mBCTest = nullptr;
+	UClass* mBCCartpole = nullptr;
+	
+	std::vector<ACartpole*> ListOfActors;
 };

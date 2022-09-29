@@ -6,14 +6,14 @@
 
 THIRD_PARTY_INCLUDES_START
 
-#include "MyMessage.pb.h"
+#include "MessageTCP.pb.h"
 
 THIRD_PARTY_INCLUDES_END
 
 
 void FUE5sim::StartupModule()
 {
-    Print("Starting up UE5sim module");
+   /* Print("Starting up UE5sim module");
 
     Print("Serializing test protobuf...");
     MyMessage MyMessage1;
@@ -30,7 +30,7 @@ void FUE5sim::StartupModule()
 
     Print(FromStd(MyMessage2.DebugString()));
     check(MyMessage1.mynumber() == MyMessage2.mynumber());
-    check(MyMessage1.mystring() == MyMessage2.mystring());
+    check(MyMessage1.mystring() == MyMessage2.mystring());*/
 }
 
 void FUE5sim::ShutdownModule()

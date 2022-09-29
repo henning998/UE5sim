@@ -4,7 +4,7 @@
 #include "Server.h"
 THIRD_PARTY_INCLUDES_START
 
-#include "MyMessage.pb.h"
+#include "MessageTCP.pb.h"
 
 THIRD_PARTY_INCLUDES_END
 
@@ -13,21 +13,30 @@ AServer::AServer()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_test(TEXT("Blueprint'/Game/Blueprints/cartpoletest.cartpoletest'"));
-	if (blueprint_finder_test.Succeeded())
-		mBCTest = (UClass*)blueprint_finder_test.Object->GeneratedClass;
-	static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_cartpole(TEXT("Blueprint'/Game/Blueprints/BP_Cartpole.BP_Cartpole'"));
-	if (blueprint_finder_cartpole.Succeeded())
-		mBCCartpole = (UClass*)blueprint_finder_cartpole.Object->GeneratedClass;
+	//static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_test(TEXT("Blueprint'/Game/Blueprints/cartpoletest.cartpoletest'"));
+	//if (blueprint_finder_test.Succeeded())
+	//	mBCTest = (UClass*)blueprint_finder_test.Object->GeneratedClass;
+	//static ConstructorHelpers::FObjectFinder<UBlueprint> blueprint_finder_cartpole(TEXT("Blueprint'/Game/Blueprints/BP_Cartpole.BP_Cartpole'"));
+	//if (blueprint_finder_cartpole.Succeeded())
+	//	mBCCartpole = (UClass*)blueprint_finder_cartpole.Object->GeneratedClass;
 	
 
+}
+
+void AServer::delete_elem(size_t i)
+{
+	//ConnectionSockets.at(i)->Close();
+	//ConnectionSockets.erase(ConnectionSockets.begin() + i);
+	//LastActivitySockets.erase(LastActivitySockets.begin() + i);
+	clients.at(i).close();
+	clients.erase(clients.begin() + i);
 }
 
 // Called when the game starts or when spawned
 void AServer::BeginPlay()
 {
 	Open_Connection();
-	AddActor();
+	//AddActor();
 	Super::BeginPlay();
 	
 }
@@ -36,6 +45,17 @@ void AServer::BeginPlay()
 void AServer::Tick(float DeltaTime)
 {
 	Conduct_Connection();
+	if (joblist.size()>0)
+	{
+	job todo = joblist.front();
+	todo.func();
+	joblist.pop();
+	}
+	//if(spawn)
+	//{
+		//AddActor();
+		//spawn = false;
+	//}
 	Super::Tick(DeltaTime);
 
 }
@@ -92,9 +112,15 @@ void AServer::Conduct_Connection()
 		bool hasConnection = false;
 		if (ListenSocket->HasPendingConnection(hasConnection) && hasConnection)
 		{
-			ConnectionSockets.push_back(ListenSocket->Accept(*RemoteAddress, TEXT("Connection")));
-			LastActivitySockets.push_back(FPlatformTime::Seconds());
-			if(ConnectionSockets.size() == NumberOfListen)
+			
+			//ConnectionSockets.push_back(ListenSocket->Accept(*RemoteAddress, TEXT("Connection")));
+			//LastActivitySockets.push_back(FPlatformTime::Seconds());
+			//if(ConnectionSockets.size() == NumberOfListen)
+			client newcon;
+			newcon.tcp_con = ListenSocket->Accept(*RemoteAddress, TEXT("Connection"));
+			newcon.last_activ = FPlatformTime::Seconds();
+			clients.push_back(newcon);
+			if(clients.size() == NumberOfListen)
 			{
 				WaitingForConnection = false;
 			}
@@ -111,23 +137,30 @@ void AServer::Conduct_Connection()
 						{
 							uint32 size;
 							TArray<uint8> ReceivedData;
-							for (size_t i = 0; i < ConnectionSockets.size(); i++)
+							//for (size_t i = 0; i < ConnectionSockets.size(); i++)
+							for(size_t i = 0; i < clients.size(); i++)
 							{
-								if ((ConnectionSockets.at(i)->GetConnectionState() == SCS_Connected)&&((LastActivitySockets.at(i)+TimeOutConnection) >= FPlatformTime::Seconds()))
+								//if ((ConnectionSockets.at(i)->GetConnectionState() == SCS_Connected)&&((LastActivitySockets.at(i)+TimeOutConnection) >= FPlatformTime::Seconds()))
+								if(clients.at(i).tcp_con->GetConnectionState() == SCS_Connected && ((clients.at(i).last_activ + TimeOutConnection) >= FPlatformTime::Seconds()))
 								{
-									if (ConnectionSockets.at(i)->HasPendingData(size))
+									//if (ConnectionSockets.at(i)->HasPendingData(size))
+									if(clients.at(i).tcp_con->HasPendingData(size))
 									{
-										ReceivedData.Init(0, 10);
+										ReceivedData.Init(0, 1024);
 										int32 Read = 0;
-										ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+										//ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+										clients.at(i).tcp_con->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
+
 										Message(ReceivedData);
-										LastActivitySockets.at(i) = FPlatformTime::Seconds();
+										//LastActivitySockets.at(i) = FPlatformTime::Seconds();
+										clients.at(i).last_activ = FPlatformTime::Seconds();
 										if (ReceivedData.Num() > 0)
 										{
 											if (ReceivedData[0] != 0) {
 												UE_LOG(LogTemp, Warning, TEXT("GOT MAIL"));
 												int32 bytesend = 0;
-												ConnectionSockets.at(i)->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+												//ConnectionSockets.at(i)->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
+												clients.at(i).tcp_con->Send(ReceivedData.GetData(), ReceivedData.Num(), bytesend);
 											}
 										}
 									}
@@ -135,9 +168,7 @@ void AServer::Conduct_Connection()
 								else 
 								{
 									// NEED TO BE UPDATED FOR DELETING THE ADDED AGENT
-									ConnectionSockets.at(i)->Close();
-									ConnectionSockets.erase(ConnectionSockets.begin() + i);
-									LastActivitySockets.erase(LastActivitySockets.begin() + i);
+									delete_elem(i);
 									WaitingForConnection = true;
 								}
 							}
@@ -156,20 +187,33 @@ void AServer::Message(TArray<uint8> msg)
 	{
 		message.push_back(msg[i]);
 	}
-	MyMessage inbox;
+	MessageTCP inbox;
+
+	// TEST FUNC
 	inbox.ParseFromString(message);
-	double num = inbox.mynumber();
-	std::string st = inbox.mystring();
-	//AddActor();
+	std::vector<float> test;
+	std::copy(inbox.agent_input().begin(), inbox.agent_input().end(), std::back_inserter(test));
+	int id = inbox.agent_id();
+	std::string func = inbox.function_call();
+	std::string debug = inbox.debug_msg();
+	// TEST FUNC
+	job jobobj;
+	if (func == "addactor")
+	{
+		jobobj.func = std::bind(&AServer::AddActor,this);
+		joblist.push(jobobj);
+	}
 	// add func to add agent and set input
 }
 
+
+// ONLY CALL THIS FUNTION IN THE MAIN THREAD
 void AServer::AddActor()
 {
 	const FVector spawn_point = FVector(0, 4, 7);
 	const FRotator spawn_rotation = FRotator();
-	ListOfActors.push_back(GetWorld()->SpawnActor<ACartpole>(mBCCartpole, spawn_point, spawn_rotation));
-	double test = ListOfActors.at(0)->GameTestCart;
+	ListOfActors.push_back(GetWorld()->SpawnActor<ACartpole>(YourBlueprintClass)); //GetWorld()->SpawnActor<ACartpole>(mBCCartpole , spawn_point, spawn_rotation));
+	//double test = ListOfActors.at(0)->GameTestCart;
 }
 
 void AServer::SetInputActor()

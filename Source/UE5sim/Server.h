@@ -8,17 +8,24 @@
 #include "Runtime/Sockets/Public/Sockets.h"
 #include "Runtime/Sockets/Public/SocketSubsystem.h"
 #include <vector>
+#include <algorithm>
+#include <iterator>
 #include "Cartpole.h"
+#include "client.h"
+#include <queue>
 
 #include "Server.generated.h"
+
 
 UCLASS()
 class UE5SIM_API AServer : public AActor
 {
 	GENERATED_BODY()
 	FSocket* ListenSocket;
-	std::vector<FSocket*> ConnectionSockets;
-	std::vector<double> LastActivitySockets;
+	std::vector<client> clients;
+	std::queue<job> joblist;
+	//std::vector<FSocket*> ConnectionSockets;
+	//std::vector<double> LastActivitySockets;
 	bool IsConnectionOpen = false;
 	bool WaitingForConnection = false;
 	bool RecvThreadStarted = false;
@@ -26,6 +33,9 @@ class UE5SIM_API AServer : public AActor
 	double TimeOutConnection = 60; // seconds
 
 	TFuture<void> ClientConnectionFinishedFuture;
+
+	void delete_elem(size_t i);
+	//bool spawn = false;
 
 public:	
 	// Sets default values for this actor's properties
@@ -45,9 +55,9 @@ public:
 	void Message(TArray<uint8> msg);
 	void AddActor();
 	void SetInputActor();
-
-	UClass* mBCTest = nullptr;
-	UClass* mBCCartpole = nullptr;
-	
+	//UClass* mBCTest = nullptr;
+	//UClass* mBCCartpole = nullptr;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> YourBlueprintClass;
 	std::vector<ACartpole*> ListOfActors;
 };

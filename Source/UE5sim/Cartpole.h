@@ -24,17 +24,22 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	UFUNCTION(BlueprintCallable)
+	void UseInput(TArray<float> &a_out);
+	UFUNCTION(BlueprintCallable)
+	void UpdateState(TArray<float> a_in);
+
+
+	void SetInput(std::vector<float> in);
+	std::vector<float> GetState();
+	bool IsNewState();
+
+private:
 	bool InputFlag = false;
 	bool StateFlag = false;
-	std::vector<double> Input;
-	std::vector<double> State;
-	double GameTestCart = 420.69;
-
-	void SetInput(std::vector<double> in);
-	UFUNCTION(BlueprintCallable)
-	void UseInput(float &a_out);
-	void SetState();
-	std::vector<double> GetState();
-
+	bool UpdateFlag = true; // true to set the first state
+	std::vector<float> Input;
+	std::vector<float> State;
+	//double GameTestCart = 420.69;
 
 };

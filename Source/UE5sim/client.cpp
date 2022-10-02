@@ -27,3 +27,8 @@ job::job()
 job::~job()
 {
 }
+void job::run()
+{
+	
+	func();
+}

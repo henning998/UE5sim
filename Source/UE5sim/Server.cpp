@@ -48,7 +48,7 @@ void AServer::Tick(float DeltaTime)
 	if (joblist.size()>0)
 	{
 	job todo = joblist.front();
-	todo.func();
+	todo.run();
 	joblist.pop();
 	}
 	//if(spawn)
@@ -151,7 +151,7 @@ void AServer::Conduct_Connection()
 										//ConnectionSockets.at(i)->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
 										clients.at(i).tcp_con->Recv(ReceivedData.GetData(), ReceivedData.Num(), Read);
 
-										Message(ReceivedData);
+										Message(ReceivedData, &clients.at(i));
 										//LastActivitySockets.at(i) = FPlatformTime::Seconds();
 										clients.at(i).last_activ = FPlatformTime::Seconds();
 										if (ReceivedData.Num() > 0)
@@ -179,7 +179,7 @@ void AServer::Conduct_Connection()
 	}
 }
 
-void AServer::Message(TArray<uint8> msg)
+void AServer::Message(TArray<uint8> msg,client* clientobj)
 {
 // get from a Tarray of bytes to a string and then to a protobuf
 	std::string message;
@@ -191,32 +191,37 @@ void AServer::Message(TArray<uint8> msg)
 
 	// TEST FUNC
 	inbox.ParseFromString(message);
-	std::vector<float> test;
-	std::copy(inbox.agent_input().begin(), inbox.agent_input().end(), std::back_inserter(test));
+	std::vector<float> inputvec;
+	std::copy(inbox.agent_input().begin(), inbox.agent_input().end(), std::back_inserter(inputvec));
 	int id = inbox.agent_id();
 	std::string func = inbox.function_call();
 	std::string debug = inbox.debug_msg();
 	// TEST FUNC
 	job jobobj;
-	if (func == "addactor")
+	if ((func == "addactor") || (clientobj->agent == nullptr))
 	{
-		jobobj.func = std::bind(&AServer::AddActor,this);
+		jobobj.func = std::bind(&AServer::AddActor,this,clientobj);
 		joblist.push(jobobj);
 	}
-	// add func to add agent and set input
+	if (inputvec.size() > 0)
+	{
+		jobobj.func = std::bind(&AServer::SetInputActor, this, clientobj, inputvec); // check if u can reuse the same jobobj
+		joblist.push(jobobj);
+	}
 }
 
 
 // ONLY CALL THIS FUNTION IN THE MAIN THREAD
-void AServer::AddActor()
+void AServer::AddActor(client* client)
 {
 	const FVector spawn_point = FVector(0, 4, 7);
 	const FRotator spawn_rotation = FRotator();
-	ListOfActors.push_back(GetWorld()->SpawnActor<ACartpole>(YourBlueprintClass)); //GetWorld()->SpawnActor<ACartpole>(mBCCartpole , spawn_point, spawn_rotation));
+	client->agent = GetWorld()->SpawnActor<ACartpole>(YourBlueprintClass);
+	//ListOfActors.push_back(GetWorld()->SpawnActor<ACartpole>(YourBlueprintClass)); //GetWorld()->SpawnActor<ACartpole>(mBCCartpole , spawn_point, spawn_rotation));
 	//double test = ListOfActors.at(0)->GameTestCart;
 }
 
-void AServer::SetInputActor()
+void AServer::SetInputActor(client* client,std::vector<float> in)
 {
-
+	client->agent->SetInput(in);
 }

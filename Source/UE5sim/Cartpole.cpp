@@ -25,25 +25,53 @@ void ACartpole::Tick(float DeltaTime)
 
 }
 
-void ACartpole::SetInput(std::vector<double> in)
+void ACartpole::SetInput(std::vector<float> in)
 {
-	Input = in;
-	InputFlag = true;
+	if (!InputFlag)
+	{
+		Input = in;
+		InputFlag = true;
+	}
 }
 
-void ACartpole::UseInput(float &a_out)
-{ 
-	a_out = GameTestCart;
+void ACartpole::UseInput(TArray<float> &a_out)
+{
+	if(InputFlag)
+	{
+		a_out.SetNumUninitialized(Input.size());
+		for (size_t i = 0; i < Input.size(); i++)
+		{
+			a_out[i] = Input.at(i);
+		}
+		InputFlag = false;
+		UpdateFlag = true;
+	}
 }
 
-void ACartpole::SetState()
+void ACartpole::UpdateState(TArray<float> a_in)
 {
-	
+	if (!StateFlag && UpdateFlag)
+	{
+		State.clear();
+		for (size_t i = 0; i < a_in.Num(); i++)
+		{
+			State.push_back(a_in[i]);
+		}
+		StateFlag = true;
+		UpdateFlag = false;
+	}
 }
 
-std::vector<double> ACartpole::GetState()
+std::vector<float> ACartpole::GetState()
 {
-	StateFlag = false;
+	if(StateFlag)
+	{
+		StateFlag = false;
+	}
 	return State;
 }
 
+bool ACartpole::IsNewState()
+{
+	return StateFlag;
+}

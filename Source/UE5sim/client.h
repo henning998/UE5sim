@@ -31,10 +31,10 @@ class UE5SIM_API job
 public:
 	job();
 	~job();
-
+	//client* agent;
 	std::function<void(void)> func = nullptr;
 	std::function<void(int)> func_int = nullptr;
-	
+	void run();
 private:
 
 };

@@ -52,9 +52,9 @@ public:
 	void Open_Connection();
 	void Close_Connection();
 	void Conduct_Connection();
-	void Message(TArray<uint8> msg);
-	void AddActor();
-	void SetInputActor();
+	void Message(TArray<uint8> msg,client* client);
+	void AddActor(client* client);
+	void SetInputActor(client* client, std::vector<float> in);
 	//UClass* mBCTest = nullptr;
 	//UClass* mBCCartpole = nullptr;
 	UPROPERTY(EditAnywhere)

@@ -29,13 +29,16 @@ class UE5SIM_API AServer : public AActor
 	bool IsConnectionOpen = false;
 	bool WaitingForConnection = false;
 	bool RecvThreadStarted = false;
+	//bool SendingTheardStarted = false;
 	int NumberOfListen = 10;
 	double TimeOutConnection = 60; // seconds
 
-	TFuture<void> ClientConnectionFinishedFuture;
+
+	TFuture<void> RecvTheard;
+	//TFuture<void> SendingTheard;
 
 	void delete_elem(size_t i);
-	//bool spawn = false;
+	float GetValidPositionForAgent();
 
 public:	
 	// Sets default values for this actor's properties
@@ -55,9 +58,12 @@ public:
 	void Message(TArray<uint8> msg,client* client);
 	void AddActor(client* client);
 	void SetInputActor(client* client, std::vector<float> in);
+	void GetStateActor(client* client);
+	void ResetActor(client* client);
+
 	//UClass* mBCTest = nullptr;
 	//UClass* mBCCartpole = nullptr;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor> YourBlueprintClass;
-	std::vector<ACartpole*> ListOfActors;
+	std::vector<float> ListOfAgentPos;
 };

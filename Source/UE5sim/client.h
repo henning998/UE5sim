@@ -9,6 +9,7 @@
 #include "Runtime/Sockets/Public/SocketSubsystem.h"
 #include "Cartpole.h"
 #include <functional>
+//#include <mutex>
 
 /**
  * 
@@ -16,13 +17,17 @@
 class UE5SIM_API client
 {
 public:
+	//std::mutex mutex;
 	double id;
 	FSocket* tcp_con;
 	double last_activ;
-	ACartpole* agent;
+	ACartpole* agent = nullptr;
 	client();
 	~client();
 	void close();
+	// checks if agent have new state and send it to client if true
+	void SendNewState();
+	void SendMSG(std::string msg);
 };
 
 

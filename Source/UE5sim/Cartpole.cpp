@@ -73,5 +73,40 @@ std::vector<float> ACartpole::GetState()
 
 bool ACartpole::IsNewState()
 {
-	return StateFlag;
+	return this->StateFlag;
+}
+
+void ACartpole::SetRandomStartRotation(FRotator &rot)
+{
+	float pitch = FMath::RandRange(-20, 20);
+	rot = FRotator(pitch, 0, 0);
+}
+
+void ACartpole::CallResume()
+{
+	Resume();
+}
+void ACartpole::CallPause()
+{
+	Pause();
+}
+
+void ACartpole::SetReward(float reward)
+{
+	Reward = reward;
+}
+
+void ACartpole::SetDone(bool done)
+{
+	Done = done;
+}
+
+void ACartpole::GetYLocation(float &y)
+{
+	y = YLocationActor;
+}
+
+void ACartpole::GetDone(bool& done)
+{
+	done = Done;
 }

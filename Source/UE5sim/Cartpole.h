@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include <vector>
 
+
 #include "Cartpole.generated.h"
 
 UCLASS()
@@ -20,6 +21,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	bool StateFlag = false;
 
 public:	
 	// Called every frame
@@ -28,18 +30,39 @@ public:
 	void UseInput(TArray<float> &a_out);
 	UFUNCTION(BlueprintCallable)
 	void UpdateState(TArray<float> a_in);
+	UFUNCTION(BlueprintCallable)
+	void SetRandomStartRotation(FRotator& rot_out);
+	UFUNCTION(BlueprintImplementableEvent)
+		void ResetEnv();
+	UFUNCTION(BlueprintImplementableEvent)
+		void Pause();
+	UFUNCTION(BlueprintImplementableEvent)
+		void Resume();
+	UFUNCTION(BlueprintCallable)
+		void CallPause();
+	UFUNCTION(BlueprintCallable)
+		void CallResume();
+	UFUNCTION(BlueprintCallable)
+		void SetReward(float Reward);
+	UFUNCTION(BlueprintCallable)
+		void SetDone(bool Done);
+	UFUNCTION(BlueprintCallable)
+		void GetDone(bool& Done);
+	UFUNCTION(BlueprintCallable)
+		void GetYLocation(float &y);
 
+	double YLocationActor = 0;
 
 	void SetInput(std::vector<float> in);
 	std::vector<float> GetState();
 	bool IsNewState();
+	bool Done = false;
+	float Reward = 0;
 
 private:
 	bool InputFlag = false;
-	bool StateFlag = false;
 	bool UpdateFlag = true; // true to set the first state
 	std::vector<float> Input;
 	std::vector<float> State;
-	//double GameTestCart = 420.69;
 
 };

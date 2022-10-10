@@ -37,7 +37,7 @@ class UE5SIM_API AServer : public AActor
 	TFuture<void> RecvTheard;
 	//TFuture<void> SendingTheard;
 
-	void delete_elem(size_t i);
+	void delete_elem(client* client);
 	float GetValidPositionForAgent();
 
 public:	

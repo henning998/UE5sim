@@ -20,6 +20,7 @@ client::~client()
 void client::close()
 {
 	tcp_con->Close();
+	agent->Destroy();
 }
 
 

@@ -28,6 +28,8 @@ public:
 	// checks if agent have new state and send it to client if true
 	void SendNewState();
 	void SendMSG(std::string msg);
+	bool slet = false;
+	bool delete_agent = false;
 };
 
 

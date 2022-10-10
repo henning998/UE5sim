@@ -23,10 +23,15 @@ AServer::AServer()
 
 }
 
-void AServer::delete_elem(size_t i)
+void AServer::delete_elem(client* clientobj)
 {
-	clients.at(i).close();
-	clients.erase(clients.begin() + i);
+	double num = clientobj->agent->YLocationActor;
+	auto it = std::find(ListOfAgentPos.begin(), ListOfAgentPos.end(), num);
+	ListOfAgentPos.erase(it);
+	clientobj->close();
+	clientobj->slet = true;
+	///*auto cl = std::find(clients.begin(), clients.end(), clientobj);
+	//*/clients.erase(cl);
 }
 
 // Called when the game starts or when spawned
@@ -152,8 +157,19 @@ void AServer::Conduct_Connection()
 								else // Delete inactiv client
 								{
 									// NEED TO BE UPDATED FOR DELETING THE ADDED AGENT
-									delete_elem(i);
+									if(clients.at(i).slet)
+									{
+										clients.erase(clients.begin() + i);
+									}
+									else if(!clients.at(i).delete_agent) {
+										clients.at(i).delete_agent = true;
+										job jobobj;
+									client* clientobj =  &clients.at(i);
+									//delete_elem(i);
+									jobobj.func = std::bind(&AServer::delete_elem, this, clientobj);
+									joblist.push(jobobj);
 									WaitingForConnection = true;
+									}
 								}
 							}
 						}
@@ -210,7 +226,7 @@ void AServer::Message(TArray<uint8> msg, client* clientobj)
 void AServer::AddActor(client* client)
 {
 	float y = GetValidPositionForAgent();
-	const FVector spawn_point = FVector(0, y, 7);
+	const FVector spawn_point = FVector(0, y, 0.1);
 	const FRotator spawn_rotation = FRotator();
 	client->agent = GetWorld()->SpawnActor<ACartpole>(YourBlueprintClass,spawn_point,spawn_rotation);
 	client->agent->YLocationActor = y; 

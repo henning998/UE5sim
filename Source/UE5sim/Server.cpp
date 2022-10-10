@@ -25,13 +25,15 @@ AServer::AServer()
 
 void AServer::delete_elem(client* clientobj)
 {
-	double num = clientobj->agent->YLocationActor;
-	auto it = std::find(ListOfAgentPos.begin(), ListOfAgentPos.end(), num);
-	ListOfAgentPos.erase(it);
+	if(clientobj->agent != nullptr)
+	{
+		double num = clientobj->agent->YLocationActor;
+		auto it = std::find(ListOfAgentPos.begin(), ListOfAgentPos.end(), num);
+		ListOfAgentPos.erase(it);
+	}
 	clientobj->close();
 	clientobj->slet = true;
-	///*auto cl = std::find(clients.begin(), clients.end(), clientobj);
-	//*/clients.erase(cl);
+	
 }
 
 // Called when the game starts or when spawned

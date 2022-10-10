@@ -72,7 +72,7 @@ static const ::_pb::Message* const file_default_instances[] = {
 
 const char descriptor_table_protodef_MessageTCP_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\020MessageTCP.proto\"\235\001\n\nMessageTCP\022\020\n\010age"
-  "nt_id\030\001 \001(\005\022\r\n\005model\030\002 \001(\t\022\023\n\013agent_inpu"
+  "nt_id\030\001 \001(\005\022\r\n\005model\030\002 \001(\014\022\023\n\013agent_inpu"
   "t\030\003 \003(\002\022\021\n\tenv_state\030\004 \003(\002\022\016\n\006reward\030\005 \001"
   "(\001\022\014\n\004done\030\006 \001(\010\022\025\n\rfunction_call\030\007 \001(\t\022"
   "\021\n\tdebug_msg\030\010 \001(\tb\006proto3"
@@ -232,13 +232,12 @@ const char* MessageTCP::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
         } else
           goto handle_unusual;
         continue;
-      // string model = 2;
+      // bytes model = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
           auto str = _internal_mutable_model();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "MessageTCP.model"));
         } else
           goto handle_unusual;
         continue;
@@ -335,13 +334,9 @@ uint8_t* MessageTCP::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_agent_id(), target);
   }
 
-  // string model = 2;
+  // bytes model = 2;
   if (!this->_internal_model().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_model().data(), static_cast<int>(this->_internal_model().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "MessageTCP.model");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         2, this->_internal_model(), target);
   }
 
@@ -429,10 +424,10 @@ size_t MessageTCP::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // string model = 2;
+  // bytes model = 2;
   if (!this->_internal_model().empty()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_model());
   }
 

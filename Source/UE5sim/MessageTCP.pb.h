@@ -227,7 +227,7 @@ class MessageTCP final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
       mutable_env_state();
 
-  // string model = 2;
+  // bytes model = 2;
   void clear_model();
   const std::string& model() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -348,7 +348,7 @@ inline void MessageTCP::set_agent_id(int32_t value) {
   // @@protoc_insertion_point(field_set:MessageTCP.agent_id)
 }
 
-// string model = 2;
+// bytes model = 2;
 inline void MessageTCP::clear_model() {
   _impl_.model_.ClearToEmpty();
 }
@@ -360,7 +360,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void MessageTCP::set_model(ArgT0&& arg0, ArgT... args) {
  
- _impl_.model_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ _impl_.model_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:MessageTCP.model)
 }
 inline std::string* MessageTCP::mutable_model() {

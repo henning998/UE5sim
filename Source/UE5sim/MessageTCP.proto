@@ -3,7 +3,7 @@ syntax = "proto3";
 message MessageTCP {
     
     int32 agent_id = 1;
-    string model = 2; // bytes
+    bytes model = 2; // bytes
     repeated float agent_input = 3;
     repeated float env_state = 4;
     double reward = 5;

@@ -28,16 +28,17 @@ void client::SendNewState()
 {
 	if (agent != nullptr)
 	{
-		if (agent->IsNewState())
+		if (agent->IsNewState() )// || agent->Done)
 		{
 			MessageTCP sendbox;
 			sendbox.set_agent_id(id);
 			std::vector<float> state = agent->GetState();
 			sendbox.mutable_env_state()->Add(state.begin(), state.end()); // instead of a for loop
-			if (agent->Done)
+			if(agent->Done)
 			{
 				sendbox.set_done(true);
 				sendbox.set_reward(agent->Reward);
+				//sendbox.set_debug_msg("done");
 			}
 			else
 			{

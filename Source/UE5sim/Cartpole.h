@@ -29,7 +29,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseInput(TArray<float> &a_out);
 	UFUNCTION(BlueprintCallable)
-	void UpdateState(TArray<float> a_in);
+	void UpdateState(TArray<float> a_in, bool Reset);
 	UFUNCTION(BlueprintCallable)
 	void SetRandomStartRotation(FRotator& rot_out);
 	UFUNCTION(BlueprintImplementableEvent)

@@ -48,9 +48,9 @@ void ACartpole::UseInput(TArray<float> &a_out)
 	}
 }
 
-void ACartpole::UpdateState(TArray<float> a_in)
+void ACartpole::UpdateState(TArray<float> a_in, bool reset)
 {
-	if (!StateFlag && UpdateFlag)
+	if ((!StateFlag && UpdateFlag) || reset)
 	{
 		State.clear();
 		for (size_t i = 0; i < a_in.Num(); i++)
